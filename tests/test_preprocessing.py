@@ -14,7 +14,7 @@ def test_hierarchical():
 
 
     logits = -np.ones((32, 644))
-    logits[:3, :27] =  np.random.random((3, 27))
+    logits[:3, :100] =  np.random.random((3, 100))
     logits[:3, :10] = np.ones((3, 10))
     outputs = {
         'hierarchical': sigmoid(logits)
@@ -22,3 +22,4 @@ def test_hierarchical():
     output = postprocessing.forward(outputs, {})
     for zero_output in output[3:]:
         assert len(zero_output) == 0
+
