@@ -37,13 +37,14 @@ class HierarchicalMultiClassification(Postprocessing):
 
                 if prev_level == 0:
                     items[idx] = { self.idx2mapping[cls]: logits[idx][cls] \
-                            for cls in classes }
+                            for cls in classes if cls in self.idx2mapping}
                 elif len(items[idx]) > 0:
                     for cls in classes:
-                        pred_map = self.idx2mapping[cls]
-                        # hierarchical loss only add if previous level exists
-                        if pred_map.split('/')[0] in items[idx]:
-                            items[idx][pred_map] = logits[idx][cls]
+                        if cls in self.idx2mapping:
+                            pred_map = self.idx2mapping[cls]
+                            # hierarchical loss only add if previous level exists
+                            if pred_map.split('/')[0] in items[idx]:
+                                items[idx][pred_map] = logits[idx][cls]
 
                 prev_level = level
         # aggregate results later

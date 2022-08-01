@@ -3,6 +3,7 @@ import onnxruntime as ort
 
 
 class Model():
+
     def __init__(self, preprocess, postprocess, configuration) -> None:
         # handle code
         self.preprocess = preprocess

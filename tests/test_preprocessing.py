@@ -22,4 +22,3 @@ def test_hierarchical():
     output = postprocessing.forward(outputs, {})
     for zero_output in output[3:]:
         assert len(zero_output) == 0
-
