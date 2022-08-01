@@ -19,7 +19,7 @@ class HierarchicalMultiClassification(Postprocessing):
         self.threshold = self.config['threshold']
 
     def __call__(self, outputs, chains):
-        logits = outputs['hierarchical']
+        logits = outputs
 
         batch_s, cls_s = logits.shape
         # array of batch_size x sum(self.levels)
@@ -63,7 +63,7 @@ class Classification(Postprocessing):
 
 
     def __call__(self, outputs, chains):
-        logits = outputs['classification']
+        logits = outputs
         assert len(logits.shape) == 2
         outputs = []
         for prob in logits:
@@ -83,7 +83,7 @@ class TopkClassification(Postprocessing):
         self.K = self.config['top_k']
 
     def __call__(self, outputs, chains):
-        logits = outputs['classification']
+        logits = outputs
         assert len(logits.shape) == 2
         outputs = []
         for prob in logits:

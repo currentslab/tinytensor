@@ -8,4 +8,4 @@ class Regression(Postprocessing):
         self.name = configuration['name']
 
     def __call__(self, outputs, chains):
-        return outputs[self.name]
+        return outputs
