@@ -2,7 +2,7 @@
 
 class Postprocessing():
 
-    def forward(self, outputs, chains):
+    def __call__(self, outputs, chains):
         '''
             outputs: Outputs results from inference models
             chains: Other results from previous models

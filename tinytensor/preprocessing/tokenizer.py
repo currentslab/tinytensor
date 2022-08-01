@@ -1,4 +1,5 @@
 import logging
+import os
 import numpy as np
 try:
     from tokenizers import Tokenizer
@@ -10,16 +11,18 @@ from tinytensor.preprocessing.abstract import Preprocessing
 class TextProcessing(Preprocessing):
 
     def __init__(self, configuration) -> None:
-        self.tokenizer = Tokenizer.from_file(configuration['tokenizer_file'])
+        self.tokenizer = Tokenizer.from_file(
+            os.path.join(configuration['_dir'], configuration['tokenizer_file'])
+        )
         self.name = configuration["name"]
 
-    def forward(self, inputs, model_inputs):
+    def __call__(self, inputs, model_inputs):
         text = inputs[self.name]
         if isinstance(text, str):
             text = [text]
 
         tokens = np.array([ encode.ids \
-                for encode in self.stu_tokenizer.encode_batch(text) ])
+                for encode in self.tokenizer.encode_batch(text) ])
         model_inputs[self.name] = tokens
         return model_inputs
 

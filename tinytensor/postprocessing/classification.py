@@ -1,3 +1,4 @@
+import os
 import logging
 import json
 import numpy as np
@@ -6,8 +7,9 @@ from tinytensor.math_utils import sigmoid
 
 class HierarchicalMultiClassification(Postprocessing):
     
-    def __init__(self, class_mapping: str, configuration) -> None:
+    def __init__(self, configuration) -> None:
         super().__init__()
+        class_mapping = os.path.join(configuration['_dir'], configuration['mapping'])
         with open(class_mapping, 'r') as f:
             mapping = json.load(f)        
         self.config = configuration
@@ -16,7 +18,7 @@ class HierarchicalMultiClassification(Postprocessing):
         self.levels = self.config['level_class']
         self.threshold = self.config['threshold']
 
-    def forward(self, outputs, chains):
+    def __call__(self, outputs, chains):
         logits = outputs['hierarchical']
 
         batch_s, cls_s = logits.shape
@@ -51,15 +53,16 @@ class HierarchicalMultiClassification(Postprocessing):
 
 class Classification(Postprocessing):
 
-    def __init__(self, class_mapping: str, configuration) -> None:
+    def __init__(self, configuration) -> None:
         super().__init__()
+        class_mapping = os.path.join(configuration['_dir'], configuration['mapping'])
         with open(class_mapping, 'r') as f:
             mapping = json.load(f)        
         self.config = configuration
         self.idx2mapping = { idx: cls_str for cls_str, idx in mapping.items() }
 
 
-    def forward(self, outputs, chains):
+    def __call__(self, outputs, chains):
         logits = outputs['classification']
         assert len(logits.shape) == 2
         outputs = []
@@ -70,15 +73,16 @@ class Classification(Postprocessing):
     
 
 class TopkClassification(Postprocessing):
-    def __init__(self, class_mapping: str, configuration) -> None:
+    def __init__(self, configuration) -> None:
         super().__init__()
+        class_mapping = os.path.join(configuration['_dir'], configuration['mapping'])
         with open(class_mapping, 'r') as f:
             mapping = json.load(f)        
         self.config = configuration
         self.idx2mapping = { idx: cls_str for cls_str, idx in mapping.items() }
         self.K = self.config['top_k']
 
-    def forward(self, outputs, chains):
+    def __call__(self, outputs, chains):
         logits = outputs['classification']
         assert len(logits.shape) == 2
         outputs = []

@@ -1,5 +1,5 @@
 import numpy as np
-from tinytensor.postprocessing.text_classification import HierarchicalMultiClassification
+from tinytensor.postprocessing.classification import HierarchicalMultiClassification
 from tinytensor.math_utils import sigmoid
 
 

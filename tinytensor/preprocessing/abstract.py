@@ -2,7 +2,7 @@
 
 class Preprocessing():
 
-    def forward(self, inputs, model_inputs):
+    def __call__(self, inputs, model_inputs):
         '''
             inputs: Inputs 
             chains: Other results from previous models
