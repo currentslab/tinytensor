@@ -19,4 +19,6 @@ def test_multi_model():
         assert 'emotion_score' in output
         assert 'sentiment_score' in output
         assert 'multi_hierarchical_category' in output
+        assert isinstance(output['multi_hierarchical_category'], list)
+
 

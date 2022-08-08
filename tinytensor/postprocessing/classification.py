@@ -5,6 +5,25 @@ import numpy as np
 from .abstract import Postprocessing
 from tinytensor.math_utils import sigmoid
 
+def hierarchical_dedup(data):
+    levels = { idx: [] for idx in range(5)}
+    scores = sorted([ (key, score) for key, score in data.items()], key=lambda x:-len(x[0]))
+    valid = []
+    for key, score in scores:
+        if '/' in key:            
+            tmp = ''
+            tokens = key.split('/')
+            key_ = ''.join(tokens)
+            if key_ in levels[len(tokens)]:
+                continue
+
+            for idx, level in enumerate(tokens):
+                tmp += level
+                levels[idx] = tmp
+            valid.append((key, score))
+
+    return { key:score for key, score in valid }
+
 class HierarchicalMultiClassification(Postprocessing):
     
     def __init__(self, configuration) -> None:
@@ -48,7 +67,7 @@ class HierarchicalMultiClassification(Postprocessing):
 
                 prev_level = level
         # aggregate results later
-        return items
+        return [ hierarchical_dedup(data) for data in items ]
 
 
 
