@@ -19,6 +19,8 @@ class TextProcessing(Preprocessing):
         if 'return_attention' in configuration:
             self.return_attention = configuration['return_attention']
         self.pad_token = self.tokenizer.token_to_id(configuration["pad_token"])
+        if self.pad_token is None:
+            self.pad_token = 0
 
     def __call__(self, inputs, model_inputs):
         texts = inputs[self.name]
