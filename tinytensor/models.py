@@ -7,6 +7,7 @@ class Model():
     def __init__(self, preprocess, postprocess, configuration) -> None:
         # handle code
         self.preprocess = preprocess
+        print(configuration['model'])
         self.ort = ort.InferenceSession(configuration['model'])
         self.postprocess = postprocess
 
@@ -20,7 +21,7 @@ class Model():
         chain = {}
         for (name, preprocess) in self.preprocess:
             model_inputs = preprocess(input, chain)
-
+        print(model_inputs['input_ids'].shape, model_inputs['attention_mask'].shape)
         outputs = self.forward(**model_inputs)
 
         output_dict = {}

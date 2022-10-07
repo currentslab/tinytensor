@@ -6,21 +6,29 @@ from .abstract import Postprocessing
 from tinytensor.math_utils import sigmoid
 
 def hierarchical_dedup(data):
+    '''
+        Remove duplicated upper level
+    '''
+    if len(data) == 1:
+        return data
+
     levels = { idx: [] for idx in range(5)}
     scores = sorted([ (key, score) for key, score in data.items()], key=lambda x:-len(x[0]))
-    valid = []
-    for key, score in scores:
-        if '/' in key:            
-            tmp = ''
-            tokens = key.split('/')
-            key_ = ''.join(tokens)
-            if key_ in levels[len(tokens)]:
-                continue
 
-            for idx, level in enumerate(tokens):
-                tmp += level
-                levels[idx] = tmp
-            valid.append((key, score))
+    valid = []
+
+    for key, score in scores:
+        tmp = ''
+        tokens = key.split('/')
+        key_ = ''.join(tokens)
+        # lower level exists before
+        if key_ in levels[len(tokens)]:
+            continue
+
+        for idx, level in enumerate(tokens):
+            tmp += level
+            levels[idx] = tmp
+        valid.append((key, score))
 
     return { key:score for key, score in valid }
 
@@ -33,6 +41,7 @@ class HierarchicalMultiClassification(Postprocessing):
             mapping = json.load(f)        
         self.config = configuration
         self.mapping2idx = mapping
+        self.limit = self.config['limit'] if 'limit' in self.config else 5
         self.idx2mapping = { idx: cls_str for cls_str, idx in mapping.items() }
         self.levels = self.config['level_class']
         self.threshold = self.config['threshold']
@@ -42,15 +51,13 @@ class HierarchicalMultiClassification(Postprocessing):
 
         batch_s, cls_s = logits.shape
         # array of batch_size x sum(self.levels)
-        prev_level = 0
 
         items = [ {} for _ in range(batch_s)]
         for idx, logit in enumerate(logits):
             prev_level = 0
             logit_cls = np.argwhere(logit > self.threshold).flatten()
-
             for level in self.levels: # iterate through all levels
-                classes = logit_cls[(logit_cls < level) & (logit_cls > prev_level)]
+                classes = logit_cls[(logit_cls < level) & (logit_cls >= prev_level)]
                 if len(classes) == 0:
                     break
 
@@ -65,6 +72,12 @@ class HierarchicalMultiClassification(Postprocessing):
                             if pred_map.split('/')[0] in items[idx]:
                                 items[idx][pred_map] = logits[idx][cls]
 
+                if len(items[idx]) > self.limit:
+                    scores = [ (pred, score) for pred, score in items[idx].items() ]
+                    output = {
+                      k:v  for k, v in sorted(scores, key=lambda x:x[1], reverse=True)[:self.limit]
+                    }
+                    items[idx] = output
                 prev_level = level
         # aggregate results later
         return [ hierarchical_dedup(data) for data in items ]
@@ -79,6 +92,9 @@ class Classification(Postprocessing):
         with open(class_mapping, 'r') as f:
             mapping = json.load(f)        
         self.config = configuration
+        self.threshold = -1
+        if 'threshold' in self.config:
+            self.threshold = configuration['threshold']
         self.idx2mapping = { idx: cls_str for cls_str, idx in mapping.items() }
 
 
@@ -88,7 +104,10 @@ class Classification(Postprocessing):
         outputs = []
         for prob in logits:
             cls = np.argmax(prob)
-            outputs.append(( self.idx2mapping[cls], prob[cls] ))
+            if prob[cls] > self.threshold:
+                outputs.append(( self.idx2mapping[cls], prob[cls] ))
+            else:
+                outputs.append(())
         return outputs
     
 
