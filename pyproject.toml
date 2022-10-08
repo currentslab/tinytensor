@@ -1,14 +1,14 @@
 [tool.poetry]
 name = "tinytensor"
-version = "0.1.0"
+version = "0.1.1"
 license = "MIT"
 description = "tinytensor"
 authors = ["theblackcat102 <theblackcat102@github.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.6"
-onnxruntime = "^1.10.0"
-tokenizers = "^0.11.0"
+onnxruntime = ">1.9.0"
+tokenizers = ">0.11.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
